@@ -1,0 +1,8 @@
+name: log_delivery_analysis
+dependencies:
+  - python=3.13
+  - faker
+  - pandas
+  - numpy
+  - seaborn
+  - scikit-learn
