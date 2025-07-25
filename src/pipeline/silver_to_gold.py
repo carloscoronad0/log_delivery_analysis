@@ -8,6 +8,7 @@ def generate_deliver_orders_fact_data(config):
     output_file_path = os.path.join(config['GOLD'], 'fact_ordenes_de_entrega.xlsx')
 
     df_rutas = pd.read_excel(routes_file_path)
+    df_rutas = df_rutas[['RutaID', 'TiempoEstandar']]
     df = pd.read_excel(ordenes_file_path)
 
     df = df.merge(df_rutas, how='inner', on='RutaID')

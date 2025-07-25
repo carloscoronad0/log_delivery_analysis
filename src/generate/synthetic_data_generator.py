@@ -87,7 +87,7 @@ class DataGenerator:
         df_rutas,
         df_conductores,
         config,
-        n=1000
+        n=10000
     ) -> pd.DataFrame:
         def get_status_by_date(deliver_date, state_dict) -> str:
             if deliver_date < date.today():
@@ -108,7 +108,7 @@ class DataGenerator:
         data = []
 
         for i in range(1, n+1):
-            fecha_entrega = fake.date_between_dates(date_start="-1y", date_end="+1m")
+            fecha_entrega = fake.date_between_dates(date_start="-3y", date_end="+5m")
             rutas_conductores_row = id_rutas_conductores.sample(n=1).iloc[0]
 
             data.append({
