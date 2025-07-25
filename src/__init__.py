@@ -12,3 +12,11 @@ dg.save_to_excel(DATA_GENERATOR, df_rutas, 'rutas')
 
 df_conductores = dg.generate_conductores()
 dg.save_to_excel(DATA_GENERATOR, df_conductores, 'conductores')
+
+df_ordenes = dg.generate_ordenes_de_entrega(
+                df_clientes,
+                df_rutas,
+                df_conductores,
+                DATA_GENERATOR
+            )
+dg.save_to_excel(DATA_GENERATOR, df_ordenes, 'ordenes_de_entrega')

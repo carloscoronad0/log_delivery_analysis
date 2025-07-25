@@ -82,6 +82,48 @@ class DataGenerator:
         return pd.DataFrame(data=data)
 
     @staticmethod
+    def generate_ordenes_de_entrega(
+        df_clientes: pd.DataFrame,
+        df_rutas,
+        df_conductores,
+        config,
+        n=1000
+    ) -> pd.DataFrame:
+        def get_status_by_date(deliver_date, state_dict) -> str:
+            if deliver_date < date.today():
+                return random.choice(state_dict['Pasado'])
+            elif deliver_date == date.today():
+                return random.choice(state_dict['Hoy'])
+            else:
+                return random.choice(state_dict['Futuro'])
+
+        def get_drivers_by_route(df_rutas: pd.DataFrame, df_conductores: pd.DataFrame):
+            df_aux_conductores = df_conductores.groupby('Region')['ConductorID'].apply(list).reset_index()
+            df_aux_rutas = df_rutas.merge(df_aux_conductores, how='inner', on='Region')
+            return df_aux_rutas[['RutaID', 'ConductorID']]
+
+        id_clientes = df_clientes['ClienteID'].to_list()
+        id_rutas_conductores = get_drivers_by_route(df_rutas, df_conductores)
+
+        data = []
+
+        for i in range(1, n+1):
+            fecha_entrega = fake.date_between_dates(date_start="-1y", date_end="+1m")
+            rutas_conductores_row = id_rutas_conductores.sample(n=1).iloc[0]
+
+            data.append({
+                "OrdenID": 5000 + i,
+                "FechaEntrega": fecha_entrega,
+                "ClienteID": random.choice(id_clientes),
+                "RutaID": rutas_conductores_row['RutaID'],
+                "ConductorID": random.choice(rutas_conductores_row['ConductorID']),
+                "StatusOrden": get_status_by_date(fecha_entrega, config['STATUS_ORDENES']),
+                "TiempoReal": random.randint(50, 180)
+            })
+
+        return pd.DataFrame(data=data)
+
+    @staticmethod
     def save_to_excel(config: dict, df: pd.DataFrame, table: str):
         file_name = f"{table}.xlsx"
         file_path = os.path.join(config['OUTPUT'], file_name)
