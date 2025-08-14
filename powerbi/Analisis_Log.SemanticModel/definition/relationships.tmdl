@@ -1,0 +1,21 @@
+relationship d75f1e92-1f37-45d2-b98a-d181b120f942
+	joinOnDateBehavior: datePartOnly
+	fromColumn: dim_calendario.Date
+	toColumn: LocalDateTable_568b8d04-ea1e-4681-a643-2172b00387b1.Date
+
+relationship AutoDetected_eea72032-5f1a-47e8-a37c-b42fd246907e
+	fromColumn: fact_data_ordenes_entrega.ClienteID
+	toColumn: dim_clientes.ClienteID
+
+relationship AutoDetected_f517dd5b-6a15-42d5-82fb-8f91e65b1fe0
+	fromColumn: fact_data_ordenes_entrega.RutaID
+	toColumn: dim_rutas.RutaID
+
+relationship AutoDetected_67476b7c-5ca8-4c0d-be55-46e76087e4f0
+	fromColumn: fact_data_ordenes_entrega.ConductorID
+	toColumn: dim_conductores.ConductorID
+
+relationship AutoDetected_ecb363d1-b3d9-49a6-bcd4-001bfe250c69
+	fromColumn: fact_data_ordenes_entrega.sk_fecha
+	toColumn: dim_calendario.sk_fecha
+

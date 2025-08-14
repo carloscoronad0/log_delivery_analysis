@@ -1,0 +1,60 @@
+table dim_conductores
+	lineageTag: 028a663a-d4a8-4883-9391-b5ca553e8365
+
+	column ConductorID
+		dataType: int64
+		formatString: 0
+		lineageTag: 175f933b-70c6-44b7-ac10-06c39a916816
+		summarizeBy: none
+		sourceColumn: ConductorID
+
+		annotation SummarizationSetBy = Automatic
+
+	column Nombre
+		dataType: string
+		lineageTag: 29a78c0b-1e42-4359-9526-d5a4535f2044
+		summarizeBy: none
+		sourceColumn: Nombre
+
+		annotation SummarizationSetBy = Automatic
+
+	column Contacto
+		dataType: string
+		lineageTag: 8810c990-cb17-4139-9a47-dd68610a8fad
+		summarizeBy: none
+		sourceColumn: Contacto
+
+		annotation SummarizationSetBy = Automatic
+
+	column Edad
+		dataType: int64
+		formatString: 0
+		lineageTag: e0de4b35-e7f3-4e8b-be47-5482cb31e534
+		summarizeBy: none
+		sourceColumn: Edad
+
+		annotation SummarizationSetBy = Automatic
+
+	column Region
+		dataType: string
+		lineageTag: 3c3fc766-a08a-457d-b205-0372860d0a6f
+		summarizeBy: none
+		sourceColumn: Region
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_conductores = m
+		mode: import
+		source =
+				let
+				    Source = Excel.Workbook(File.Contents("Z:\Code\08_log_delivery_analysis\data\silver\conductores.xlsx"), null, true),
+				    Sheet1_Sheet = Source{[Item="Sheet1",Kind="Sheet"]}[Data],
+				    #"Promoted Headers" = Table.PromoteHeaders(Sheet1_Sheet, [PromoteAllScalars=true]),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"ConductorID", Int64.Type}, {"Nombre", type text}, {"Contacto", type text}, {"Edad", Int64.Type}, {"Region", type text}})
+				in
+				    #"Changed Type"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,144 @@
+table dim_calendario
+	lineageTag: c455677e-0336-47c1-8247-0e2c144e99f6
+
+	column Date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: d874ba12-8581-496f-8e44-1a871f33c3b6
+		summarizeBy: none
+		sourceColumn: Date
+
+		variation Variation
+			isDefault
+			relationship: d75f1e92-1f37-45d2-b98a-d181b120f942
+			defaultHierarchy: LocalDateTable_568b8d04-ea1e-4681-a643-2172b00387b1.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column sk_fecha
+		dataType: int64
+		formatString: 0
+		lineageTag: 66c644e0-c516-482c-970b-ee10638da43c
+		summarizeBy: none
+		sourceColumn: sk_fecha
+
+		annotation SummarizationSetBy = Automatic
+
+	column Year
+		dataType: int64
+		formatString: 0
+		lineageTag: e7e152ab-b114-4176-bc51-25ab8c782444
+		summarizeBy: sum
+		sourceColumn: Year
+
+		annotation SummarizationSetBy = Automatic
+
+	column Month
+		dataType: int64
+		formatString: 0
+		lineageTag: 860131a4-1e13-43ee-ba28-a3f3eaf82bfc
+		summarizeBy: sum
+		sourceColumn: Month
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Month Name'
+		dataType: string
+		lineageTag: 5b93c837-09d7-42fb-b9b1-9b52d80ff786
+		summarizeBy: none
+		sourceColumn: Month Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column Quarter
+		dataType: int64
+		formatString: 0
+		lineageTag: 1495de98-4c55-475d-89bd-e0901991a977
+		summarizeBy: sum
+		sourceColumn: Quarter
+
+		annotation SummarizationSetBy = Automatic
+
+	column Day
+		dataType: int64
+		formatString: 0
+		lineageTag: 643b7ba1-4786-475d-a3d3-a4c3853b8968
+		summarizeBy: sum
+		sourceColumn: Day
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Day of Week'
+		dataType: int64
+		formatString: 0
+		lineageTag: e42ae0cf-f46d-4ef8-b860-105e974f0930
+		summarizeBy: sum
+		sourceColumn: Day of Week
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Day Name'
+		dataType: string
+		lineageTag: 7afb6b08-1e02-42a3-8a2b-70ee72bd474e
+		summarizeBy: none
+		sourceColumn: Day Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Week of Year'
+		dataType: int64
+		formatString: 0
+		lineageTag: cb95428f-eaca-4632-add4-229930b0e28c
+		summarizeBy: sum
+		sourceColumn: Week of Year
+
+		annotation SummarizationSetBy = Automatic
+
+	column IsWeekend
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 81eab12d-c4cc-46a2-beae-3dce193d1da2
+		summarizeBy: none
+		sourceColumn: IsWeekend
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_calendario = m
+		mode: import
+		source =
+				let
+				    // Define the start and end dates
+				    StartDate = #date(2022, 1, 1),
+				    EndDate = #date(2025, 12, 31),
+				
+				    // Generate the list of dates
+				    DatesList = List.Dates(StartDate, Duration.Days(EndDate - StartDate) + 1, #duration(1, 0, 0, 0)),
+				
+				    // Convert to table
+				    CalendarTable = Table.FromList(DatesList, Splitter.SplitByNothing(), {"Date"}),
+				    #"Changed Type" = Table.TransformColumnTypes(CalendarTable,{{"Date", type date}}),
+				    #"Added Custom" = Table.AddColumn(#"Changed Type", "sk_fecha", each Date.ToText([Date], [Format="yyyyMMdd"])),
+				    #"Changed Type1" = Table.TransformColumnTypes(#"Added Custom",{{"sk_fecha", Int64.Type}}),
+				
+				    // Add columns
+				    AddYear = Table.AddColumn(#"Changed Type1", "Year", each Date.Year([Date]), Int64.Type),
+				    AddMonth = Table.AddColumn(AddYear, "Month", each Date.Month([Date]), Int64.Type),
+				    AddMonthName = Table.AddColumn(AddMonth, "Month Name", each Date.ToText([Date], "MMMM"), type text),
+				    AddQuarter = Table.AddColumn(AddMonthName, "Quarter", each Date.QuarterOfYear([Date]), Int64.Type),
+				    AddDay = Table.AddColumn(AddQuarter, "Day", each Date.Day([Date]), Int64.Type),
+				    AddDayOfWeek = Table.AddColumn(AddDay, "Day of Week", each Date.DayOfWeek([Date]), Int64.Type),
+				    AddDayOfWeekName = Table.AddColumn(AddDayOfWeek, "Day Name", each Date.ToText([Date], "dddd"), type text),
+				    AddWeekOfYear = Table.AddColumn(AddDayOfWeekName, "Week of Year", each Date.WeekOfYear([Date]), Int64.Type),
+				    AddIsWeekend = Table.AddColumn(AddWeekOfYear, "IsWeekend", each if Date.DayOfWeek([Date]) >= 5 then true else false, type logical),
+				
+				    // Optional: Sort the table
+				    SortedTable = Table.Sort(AddIsWeekend, {{"Date", Order.Ascending}})
+				in
+				    SortedTable
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

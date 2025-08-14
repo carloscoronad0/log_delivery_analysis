@@ -1,0 +1,112 @@
+table fact_data_ordenes_entrega
+	lineageTag: 2a6d8b98-a7fa-4cb9-8b80-354db86649ea
+
+	column OrdenID
+		dataType: int64
+		formatString: 0
+		lineageTag: f15ba188-27c5-492e-8b80-9ebe3795999a
+		summarizeBy: count
+		sourceColumn: OrdenID
+
+		annotation SummarizationSetBy = Automatic
+
+	column ClienteID
+		dataType: int64
+		formatString: 0
+		lineageTag: d85f5f8d-683e-409e-9585-cfe57f069ef5
+		summarizeBy: none
+		sourceColumn: ClienteID
+
+		annotation SummarizationSetBy = Automatic
+
+	column RutaID
+		dataType: int64
+		formatString: 0
+		lineageTag: 6abde6e2-694a-467b-8ec9-3654cc1c2080
+		summarizeBy: none
+		sourceColumn: RutaID
+
+		annotation SummarizationSetBy = Automatic
+
+	column ConductorID
+		dataType: int64
+		formatString: 0
+		lineageTag: a720da58-7555-46ad-9498-51d070dcd7d1
+		summarizeBy: none
+		sourceColumn: ConductorID
+
+		annotation SummarizationSetBy = Automatic
+
+	column StatusOrden
+		dataType: string
+		lineageTag: 93169d8c-2e99-43f5-9717-438809c71192
+		summarizeBy: none
+		sourceColumn: StatusOrden
+
+		annotation SummarizationSetBy = Automatic
+
+	column TiempoReal
+		dataType: int64
+		formatString: 0
+		lineageTag: 8ebf6b8a-7758-48f2-aee9-0aa2beb67826
+		summarizeBy: sum
+		sourceColumn: TiempoReal
+
+		annotation SummarizationSetBy = Automatic
+
+	column delta_entrega
+		dataType: int64
+		formatString: 0
+		lineageTag: df5d9f9a-4538-4ba6-8bf6-abcc953c7a17
+		summarizeBy: sum
+		sourceColumn: delta_entrega
+
+		annotation SummarizationSetBy = Automatic
+
+	column sk_fecha
+		dataType: int64
+		formatString: 0
+		lineageTag: f4b48168-d711-424f-b983-e371a169a64a
+		summarizeBy: none
+		sourceColumn: sk_fecha
+
+		annotation SummarizationSetBy = Automatic
+
+	column TiempoEstandar
+		dataType: int64
+		formatString: 0
+		lineageTag: aec91f12-5c29-46f6-8498-c22f057f957d
+		summarizeBy: sum
+		sourceColumn: TiempoEstandar
+
+		annotation SummarizationSetBy = Automatic
+
+	column CategoriaEntrega =
+			IF([StatusOrden] == "Entregado", SWITCH(
+			    TRUE(),
+			    [delta_entrega] > 10, "Retrasada",
+			    [delta_entrega] < -10, "Adelantada",
+			    "A tiempo"
+			), "ND")
+		lineageTag: 431c8611-7704-4432-8dd7-d08acfbad7c0
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fact_data_ordenes_entrega = m
+		mode: import
+		source =
+				let
+				    Source = Excel.Workbook(File.Contents("Z:\Code\08_log_delivery_analysis\data\gold\fact_ordenes_de_entrega.xlsx"), null, true),
+				    Sheet1_Sheet = Source{[Item="Sheet1",Kind="Sheet"]}[Data],
+				    #"Promoted Headers" = Table.PromoteHeaders(Sheet1_Sheet, [PromoteAllScalars=true]),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"OrdenID", Int64.Type}, {"FechaEntrega", type datetime}, {"ClienteID", Int64.Type}, {"RutaID", Int64.Type}, {"ConductorID", Int64.Type}, {"StatusOrden", type text}, {"TiempoReal", Int64.Type}, {"delta_entrega", Int64.Type}, {"sk_fecha", Int64.Type}, {"TiempoEstandar", Int64.Type}}),
+				    #"Removed Columns" = Table.RemoveColumns(#"Changed Type",{"FechaEntrega"}),
+				    #"Sorted Rows" = Table.Sort(#"Removed Columns",{{"sk_fecha", Order.Ascending}})
+				in
+				    #"Sorted Rows"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

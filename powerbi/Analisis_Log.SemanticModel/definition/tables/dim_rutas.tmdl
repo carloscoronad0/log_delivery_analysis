@@ -1,0 +1,70 @@
+table dim_rutas
+	lineageTag: beb1c5e4-5c7d-4ac6-b219-63cbbe110deb
+
+	column RutaID
+		dataType: int64
+		formatString: 0
+		lineageTag: f81029c4-5b3e-45a3-b0ff-3371420130bb
+		summarizeBy: none
+		sourceColumn: RutaID
+
+		annotation SummarizationSetBy = Automatic
+
+	column Origen
+		dataType: string
+		lineageTag: f64b51a3-b8d2-4317-8bd0-5113872cb4f6
+		summarizeBy: none
+		sourceColumn: Origen
+
+		annotation SummarizationSetBy = Automatic
+
+	column Destino
+		dataType: string
+		lineageTag: d5e92ee5-ac60-4c0e-b891-56c858f8a787
+		summarizeBy: none
+		sourceColumn: Destino
+
+		annotation SummarizationSetBy = Automatic
+
+	column Distancia
+		dataType: double
+		lineageTag: dff8167a-7737-4c8d-b231-bbbce62f4dd4
+		summarizeBy: none
+		sourceColumn: Distancia
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column TiempoEstandar
+		dataType: int64
+		formatString: 0
+		lineageTag: 86d1350d-2421-4098-a168-d8ca9c75ce70
+		summarizeBy: none
+		sourceColumn: TiempoEstandar
+
+		annotation SummarizationSetBy = Automatic
+
+	column Region
+		dataType: string
+		lineageTag: 5beacc93-3475-480d-ae4f-b8a2bef525c5
+		summarizeBy: none
+		sourceColumn: Region
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_rutas = m
+		mode: import
+		source =
+				let
+				    Source = Excel.Workbook(File.Contents("Z:\Code\08_log_delivery_analysis\data\silver\rutas.xlsx"), null, true),
+				    Sheet1_Sheet = Source{[Item="Sheet1",Kind="Sheet"]}[Data],
+				    #"Promoted Headers" = Table.PromoteHeaders(Sheet1_Sheet, [PromoteAllScalars=true]),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"RutaID", Int64.Type}, {"Origen", type text}, {"Destino", type text}, {"Distancia", type number}, {"TiempoEstandar", Int64.Type}, {"Region", type text}})
+				in
+				    #"Changed Type"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
