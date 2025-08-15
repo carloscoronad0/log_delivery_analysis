@@ -1,0 +1,75 @@
+table metrics
+	lineageTag: 98225f76-a0a6-493c-aca9-82b08208bcf0
+
+	measure TOTAL_ENTREGAS_VALIDAS = ```
+			CALCULATE(COUNT(fact_data_ordenes_entrega[OrdenID]), fact_data_ordenes_entrega[StatusOrden] IN {"Entregado", "En Preparacion", "En camino", "Pendiente"})
+			
+			```
+		lineageTag: 7218a337-695b-4976-a665-729815381789
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure %_ENTREGAS_RETRASADAS =
+			
+			VAR _retrasadas = CALCULATE(COUNT(fact_data_ordenes_entrega[OrdenID]), fact_data_ordenes_entrega[CategoriaEntrega] == "Retrasada")
+			VAR _total = CALCULATE(COUNT(fact_data_ordenes_entrega[OrdenID]), fact_data_ordenes_entrega[CategoriaEntrega] <> "ND")
+			RETURN
+			DIVIDE(_retrasadas, _total, 0)
+		formatString: 0%;-0%;0%
+		lineageTag: 14499883-79c1-45fd-9bbf-ec5290d2d58b
+
+	measure OBJETIVO_RETRASO = 0.5
+		formatString: 0%;-0%;0%
+		lineageTag: d1303e40-015f-4003-84f1-fe53199c3e61
+
+	measure #_ENTREGAS_RETRASADAS = CALCULATE(COUNT(fact_data_ordenes_entrega[OrdenID]), fact_data_ordenes_entrega[CategoriaEntrega] = "Retrasada")
+		formatString: 0
+		lineageTag: 4219f666-2ba8-4563-beab-b1fbc9ce1628
+
+	measure #_ENTREGAS_ADELANTADAS = CALCULATE(COUNT(fact_data_ordenes_entrega[OrdenID]), fact_data_ordenes_entrega[CategoriaEntrega] = "Adelantada")
+		formatString: 0
+		lineageTag: fb45bf35-3940-4432-941f-e7fb48ad63e7
+
+	measure #_ENTREGAS_A_TIEMPO = CALCULATE(COUNT(fact_data_ordenes_entrega[OrdenID]), fact_data_ordenes_entrega[CategoriaEntrega] = "A tiempo")
+		formatString: 0
+		lineageTag: 37d72bcb-0295-4191-8b1e-b8340e687048
+
+	measure COLOR_DINAMICO_TIEMPO_ENTREGA =
+			
+			VAR _tiempo_promedio = AVERAGE(fact_data_ordenes_entrega[TiempoReal])
+			VAR _tiempo_estandar = AVERAGE(dim_rutas[TiempoEstandar])
+			RETURN
+			IF( (_tiempo_promedio - _tiempo_estandar) > 10, "#B5411E", "#29856F")
+		lineageTag: 8df641f7-16ae-40db-b9e0-8d514e5943a1
+
+	measure CATEGORIA_DELTA_TIEMPO_ENTREGA = IF([DELTA_PROMEDIO_TIEMPO_ENTREGA] > 10, "NOK", "OK")
+		lineageTag: 4f02f27f-4a81-4689-ad32-6814ce22fb0a
+
+	measure DELTA_PROMEDIO_TIEMPO_ENTREGA = AVERAGE(fact_data_ordenes_entrega[TiempoReal]) - AVERAGE(dim_rutas[TiempoEstandar])
+		lineageTag: c6db5fe9-f85b-47ee-b589-165f9d45ae6d
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column metrics
+		dataType: string
+		isHidden
+		lineageTag: 94c7010f-a74b-4c35-b4e3-cb573f1d294c
+		summarizeBy: none
+		sourceColumn: metrics
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition metrics = m
+		mode: import
+		source =
+				let
+				    Source = ""
+				in
+				    Source
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Text
+

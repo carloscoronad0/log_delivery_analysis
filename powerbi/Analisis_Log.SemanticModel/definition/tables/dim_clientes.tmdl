@@ -1,0 +1,68 @@
+table dim_clientes
+	lineageTag: c630a810-0a9e-4037-b251-bd2258114cae
+
+	column ClienteID
+		dataType: int64
+		formatString: 0
+		lineageTag: c37d44fe-a267-42d1-82c5-f9447de878ce
+		summarizeBy: none
+		sourceColumn: ClienteID
+
+		annotation SummarizationSetBy = Automatic
+
+	column Nombre
+		dataType: string
+		lineageTag: 2b4b7ba5-8bfa-46ec-be7a-f0a6150e0019
+		summarizeBy: none
+		sourceColumn: Nombre
+
+		annotation SummarizationSetBy = Automatic
+
+	column TipoCliente
+		dataType: string
+		lineageTag: 2cf85cf9-696e-455c-b414-7687026ecdd5
+		summarizeBy: none
+		sourceColumn: TipoCliente
+
+		annotation SummarizationSetBy = Automatic
+
+	column Industria
+		dataType: string
+		lineageTag: 50476e04-fb9a-4675-9ae1-5b0092d810f5
+		summarizeBy: none
+		sourceColumn: Industria
+
+		annotation SummarizationSetBy = Automatic
+
+	column Direccion
+		dataType: string
+		lineageTag: b3844c0b-98f1-40a8-a0ce-f3ec40d75790
+		summarizeBy: none
+		sourceColumn: Direccion
+
+		annotation SummarizationSetBy = Automatic
+
+	column valid_industry
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: a575cf19-2b40-48e0-855e-91c08c65f017
+		summarizeBy: none
+		sourceColumn: valid_industry
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_clientes = m
+		mode: import
+		source =
+				let
+				    Source = Excel.Workbook(File.Contents("Z:\Code\08_log_delivery_analysis\data\silver\clientes.xlsx"), null, true),
+				    Sheet1_Sheet = Source{[Item="Sheet1",Kind="Sheet"]}[Data],
+				    #"Promoted Headers" = Table.PromoteHeaders(Sheet1_Sheet, [PromoteAllScalars=true]),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"ClienteID", Int64.Type}, {"Nombre", type text}, {"TipoCliente", type text}, {"Industria", type text}, {"Direccion", type text}, {"valid_industry", type logical}})
+				in
+				    #"Changed Type"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
